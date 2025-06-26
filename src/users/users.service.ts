@@ -17,7 +17,7 @@ export class UsersService {
   }
 
   async findOne(id: number) {
-    return this.userRepository.findUnique({ where: { id } });
+    return this.userRepository.findOne({ where: { id } });
   }
 
   async update(id: number, data: CreateUserDTO) {
