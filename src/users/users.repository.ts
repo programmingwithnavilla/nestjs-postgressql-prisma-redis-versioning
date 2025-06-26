@@ -23,6 +23,11 @@ export class UsersRepository extends BaseRepository<any> {
     return user;
   }
 
+  async delete(id: number) {
+    await this.prisma.user.delete({ id: id });
+    await this.incrementVersion(id);
+  }
+
   private async incrementVersion(id: number) {
     console.log('id', id);
   }
