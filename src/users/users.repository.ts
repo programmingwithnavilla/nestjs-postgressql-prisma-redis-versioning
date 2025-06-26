@@ -27,6 +27,10 @@ export class UsersRepository extends BaseRepository<any> {
     await this.prisma.user.delete({ id: id });
     await this.incrementVersion(id);
   }
+  async findOne(id: number) {
+    const user = await this.prisma.user.findUnique({ where: { id: id } });
+    return user;
+  }
 
   private async incrementVersion(id: number) {
     console.log('id', id);
