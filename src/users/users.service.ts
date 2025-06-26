@@ -13,7 +13,7 @@ export class UsersService {
   }
 
   async findAll() {
-    return this.userRepository.findMany();
+    return this.userRepository.findAll();
   }
 
   async findOne(id: number) {
