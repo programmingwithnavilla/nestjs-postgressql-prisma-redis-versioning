@@ -1,30 +1,32 @@
-import { Injectable } from '@nestjs/common';
-import { createClient } from 'redis';
+import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
+import Redis from 'ioredis';
 
 @Injectable()
-export class RedisService {
-  private client = createClient();
+export class RedisService implements OnModuleInit, OnModuleDestroy {
+  private client: Redis;
 
-  async onModuleInit() {
-    await this.client.connect();
+  onModuleInit() {
+    this.client = new Redis(); // default localhost:6379
   }
+
+  onModuleDestroy() {
+    this.client.quit();
+  }
+
+  async setVersion(key: string, version: number): Promise<void> {
+    await this.client.set(key, version);
+  }
+
+  async incrementVersion(key: string): Promise<void> {
+    await this.client.incr(key);
+  }
+
   async getVersion(key: string): Promise<number> {
-    const version = await this.client.get(key);
-    return version ? Number(version) : 1;
+    const val = await this.client.get(key);
+    return val ? parseInt(val) : 0;
   }
 
-  async incrementVersion(key: string): Promise<number> {
-    return this.client.incr(key);
-  }
-
-  async setVersion(key: string, version: number = 1) {
-    await this.client.set(key, version.toString());
-  }
-
-  async resetVersion(key: string) {
-    await this.client.set(key, '1');
-  }
-  getClient() {
-    return this.client;
+  async deleteKey(key: string): Promise<void> {
+    await this.client.del(key);
   }
 }
