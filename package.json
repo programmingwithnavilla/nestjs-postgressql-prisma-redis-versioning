@@ -1,5 +1,5 @@
 {
-  "name": "nest-postgres-redis-user-crud",
+  "name": "nestjs-postgressql-prisma-redis-versioning",
   "version": "0.0.1",
   "description": "",
   "author": "",
