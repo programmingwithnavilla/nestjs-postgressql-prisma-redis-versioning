@@ -10,16 +10,27 @@ export class UsersRepository extends BaseRepository<any> {
 
   async create(data: any) {
     const user = await this.prisma.user.create({ data: data });
+    await this.incrementVersion(user.id);
     return user;
   }
 
+  async update(id: number, data: any) {
+    const user = await this.prisma.user.update({
+      where: { id: id },
+      data: data,
+    });
+    await this.incrementVersion(id);
+    return user;
+  }
+
+  private async incrementVersion(id: number) {
+    console.log('id', id);
+  }
   private async setVersion(userId: number, version: number) {
     console.log(userId, version);
     // await this.
   }
-  private async incrementVersion(userId: number) {
-    console.log('userId', userId);
-  }
+
   private resetVersion(userId: number) {
     console.log('userId', userId);
   }
