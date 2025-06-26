@@ -28,6 +28,7 @@
     "@nestjs/swagger": "^11.2.0",
     "@nestjs/terminus": "^11.0.0",
     "@prisma/client": "^6.10.1",
+    "class-transformer": "^0.5.1",
     "ioredis": "^5.6.1",
     "prisma": "^6.10.1",
     "reflect-metadata": "^0.2.2",
