@@ -1,64 +1,75 @@
 import { Injectable } from '@nestjs/common';
-import { BaseEntity } from 'src/common/entities/base.entity';
-import { IUnitOfWork } from 'src/common/interfaces/unit-of-work.interface';
-import { PrismaService } from './prisma.service';
 import { RedisService } from 'src/redis/redis.service';
+import { IUnitOfWork } from 'src/common/interfaces/unit-of-work.interface';
+import { BaseEntity } from 'src/common/entities/base.entity';
 import { IIdentifier } from 'src/common/interfaces/identifier.interface';
 
 @Injectable()
-export class PrismaUnitOfWork<T extends BaseEntity> implements IUnitOfWork<T> {
+export class PrismaUnitOfWork<
+  T extends BaseEntity,
+  M extends { [key: string]: any },
+> implements IUnitOfWork<T>
+{
   constructor(
-    private readonly prisma: PrismaService,
+    private readonly model: M, // Prisma model (e.g., prisma.user)
     private readonly redis: RedisService,
-    private modelName: keyof PrismaService,
+    private readonly modelName: string, // For Redis versioning
   ) {}
-  private getModel() {
-    return this.prisma[this.modelName] as any;
-  }
-  private getVersionKey(id: number) {
+
+  private getVersionKey(id: number): string {
     return `${this.modelName}:${id}:version`;
   }
 
   async findAll(): Promise<T[]> {
-    return this.getModel().findMany({ where: { archivedAt: null } });
+    return this.model.findMany({ where: { archivedAt: null } });
   }
-  async findOne(filter: Partial<T>): Promise<T | null> {
-    return this.getModel().findFirst({
-      where: { ...filter, archivedAt: null },
-    });
-  }
-  async findOneById(id: number): Promise<T | null> {
-    return this.getModel().findUnique({ where: { id } });
-  }
-  async findOneByIdentifier(identifier: IIdentifier): Promise<T | null> {
-    const where = { id: identifier.id };
 
-    return this.getModel().findFirst({ where: { ...where, archivedAt: null } });
+  async findOne(filter: Partial<T>): Promise<T | null> {
+    return this.model.findFirst({ where: { ...filter, archivedAt: null } });
+  }
+
+  async findOneById(id: number): Promise<T | null> {
+    return this.model.findUnique({ where: { id } });
+  }
+
+  async findOneByIdentifier(identifier: IIdentifier): Promise<T | null> {
+    return this.model.findFirst({
+      where: {
+        ...(identifier.id ? { id: identifier.id } : {}),
+        ...(identifier.slug ? { slug: identifier.slug } : {}),
+        archivedAt: null,
+      },
+    });
   }
 
   async insert(entity: Partial<T>): Promise<T> {
-    const created = await this.getModel().create({ data: entity });
+    const created = await this.model.create({ data: entity });
     await this.redis.setVersion(this.getVersionKey(created.id), 1);
     return created;
   }
-  async update(identifier: IIdentifier, entity: Partial<T>): Promise<T> {
-    const where = { id: identifier.id };
 
-    const updated = await this.getModel().update({ where, data: entity });
+  async update(identifier: IIdentifier, entity: Partial<T>): Promise<T> {
+    const where = identifier.id
+      ? { id: identifier.id }
+      : { slug: identifier.slug };
+    const updated = await this.model.update({ where, data: entity });
     await this.redis.incrementVersion(this.getVersionKey(updated.id));
     return updated;
   }
-  async delete(identifier: IIdentifier): Promise<void> {
-    const where = { id: identifier.id };
 
-    await this.getModel().delete({ where });
-    await this.redis.incrementVersion(
-      this.getVersionKey(where.id || where.slug),
-    );
+  async delete(identifier: IIdentifier): Promise<void> {
+    const where = identifier.id
+      ? { id: identifier.id }
+      : { slug: identifier.slug };
+    await this.model.delete({ where });
+    await this.redis.incrementVersion(this.getVersionKey(where.id ?? 0));
   }
+
   async softDelete(identifier: IIdentifier): Promise<T> {
-    const where = { id: identifier.id };
-    const updated = await this.getModel().update({
+    const where = identifier.id
+      ? { id: identifier.id }
+      : { slug: identifier.slug };
+    const updated = await this.model.update({
       where,
       data: { archivedAt: new Date() },
     });
@@ -67,8 +78,10 @@ export class PrismaUnitOfWork<T extends BaseEntity> implements IUnitOfWork<T> {
   }
 
   async restore(identifier: IIdentifier): Promise<T> {
-    const where = { id: identifier.id };
-    const updated = await this.getModel().update({
+    const where = identifier.id
+      ? { id: identifier.id }
+      : { slug: identifier.slug };
+    const updated = await this.model.update({
       where,
       data: { archivedAt: null },
     });
