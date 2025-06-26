@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { User } from '@prisma/client';
+import { PrismaService } from 'src/database/prisma.service';
 import { PrismaUnitOfWork } from 'src/database/prisma.unit-of-work';
-import { PrismaService } from 'src/prisma/prisma.service';
 import { RedisService } from 'src/redis/redis.service';
 
 @Injectable()
