@@ -1,6 +1,6 @@
 import { Controller, Get, VERSION_NEUTRAL, Version } from '@nestjs/common';
-import { AppService } from './app.service';
 import { ApiTags } from '@nestjs/swagger';
+import { AppService } from './app.service';
 
 @Controller({
   version: VERSION_NEUTRAL,
