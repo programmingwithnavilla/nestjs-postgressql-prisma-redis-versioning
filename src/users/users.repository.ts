@@ -17,4 +17,10 @@ export class UsersRepository extends BaseRepository<any> {
     console.log(userId, version);
     // await this.
   }
+  private async incrementVersion(userId: number) {
+    console.log('userId', userId);
+  }
+  private resetVersion(userId: number) {
+    console.log('userId', userId);
+  }
 }
