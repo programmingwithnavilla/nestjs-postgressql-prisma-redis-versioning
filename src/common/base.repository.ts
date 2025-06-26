@@ -6,15 +6,15 @@ interface QueryParams {
 }
 
 export abstract class BaseRepository<T> {
-  constructor(protected readonly model: any) {}
+  constructor(protected readonly model: T) {}
 
-  async findMany(params: QueryParams) {
+  async findMany(params: QueryParams): Promise<T> {
     const { page = 1, size = 10, sort = 'id:asc', filter = {} } = params;
     const orderBy = { [sort.split(':')[0]]: sort.split(':')[1] };
     return this.model.findMany({
       skip: (page - 1) * size,
       take: size,
-      where: this.buildFilter(filter),
+      where: this.buildFilters(filter),
       orderBy,
     });
   }
