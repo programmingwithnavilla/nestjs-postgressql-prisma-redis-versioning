@@ -12,4 +12,9 @@ export class UsersRepository extends BaseRepository<any> {
     const user = await this.prisma.user.create({ data: data });
     return user;
   }
+
+  private async setVersion(userId: number, version: number) {
+    console.log(userId, version);
+    // await this.
+  }
 }
