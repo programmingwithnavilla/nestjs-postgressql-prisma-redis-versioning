@@ -32,6 +32,11 @@ export class UsersRepository extends BaseRepository<any> {
     return user;
   }
 
+  async findAll() {
+    const users = await this.prisma.user.findMany({});
+    return users;
+  }
+
   private async incrementVersion(id: number) {
     console.log('id', id);
   }
