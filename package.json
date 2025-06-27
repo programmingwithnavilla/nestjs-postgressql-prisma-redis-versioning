@@ -1,5 +1,5 @@
 {
-  "name": "nestjs-postgressql-prisma-redis-versioning",
+  "name": "nestjs-repository-pattern",
   "version": "0.0.1",
   "description": "",
   "author": "",
