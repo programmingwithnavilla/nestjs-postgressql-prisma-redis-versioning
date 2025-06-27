@@ -3,18 +3,8 @@ import { IIdentifier } from '../interfaces/identifier.interface';
 import { IRepository } from '../interfaces/repository.interface';
 import { IUnitOfWork } from '../interfaces/unit-of-work.interface';
 
-// interface QueryParams {
-//   page?: number;
-//   size?: number;
-//   sort?: string;
-//   filter?: Record<string, unknown>;
-// }
-
-export class BaseRepositor<T extends IBaseEntity> implements IRepository<T> {
-  constructor(
-    private readonly unitOfWork: IUnitOfWork<T>,
-    private readonly entityName?: string,
-  ) {}
+export class BaseRepository<T extends IBaseEntity> implements IRepository<T> {
+  constructor(private readonly unitOfWork: IUnitOfWork<T>) {}
   async findAll(): Promise<T[]> {
     return this.unitOfWork.findAll();
   }
