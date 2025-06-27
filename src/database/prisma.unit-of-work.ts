@@ -3,6 +3,12 @@ import { RedisService } from 'src/redis/redis.service';
 import { IUnitOfWork } from 'src/common/interfaces/unit-of-work.interface';
 import { BaseEntity } from 'src/common/entities/base.entity';
 import { IIdentifier } from 'src/common/interfaces/identifier.interface';
+import {
+  FilterInput,
+  Primitive,
+  QueryParams,
+} from 'src/common/interfaces/base.interface';
+import { buildWhereFilter } from 'src/utils/prisma.utils';
 
 @Injectable()
 export class PrismaUnitOfWork<
@@ -47,6 +53,33 @@ export class PrismaUnitOfWork<
         ...(identifier.id ? { id: identifier.id } : {}),
         archivedAt: null,
       },
+    });
+  }
+
+  async paginate({
+    page = 0,
+    size = 10,
+    filters,
+    sort,
+  }: QueryParams): Promise<T[]> {
+    const where = buildWhereFilter(
+      filters as FilterInput<Record<string, Primitive>>,
+    );
+    where.archivedAt = null;
+
+    const orderBy: Record<string, 'asc' | 'desc'> = {};
+    if (sort) {
+      const [field, dir] = sort.split(':');
+      if (field) {
+        orderBy[field] = dir === 'desc' ? 'desc' : 'asc';
+      }
+    }
+
+    return this.model.findMany({
+      where,
+      skip: page * size,
+      take: size,
+      orderBy: Object.keys(orderBy).length ? orderBy : undefined,
     });
   }
 
