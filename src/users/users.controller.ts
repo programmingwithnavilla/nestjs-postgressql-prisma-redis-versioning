@@ -7,6 +7,7 @@ import {
   Put,
   Delete,
   Param,
+  Query,
 } from '@nestjs/common';
 import { CreateUserSchema } from './dto/create-user.dto';
 import { UsersService } from './users.service';
@@ -32,6 +33,15 @@ export class UsersController {
   @Get(':id')
   async findOne(@Param('id') id: string) {
     return this.userService.findOne(+id);
+  }
+  @Get(':page/:limit')
+  async findPaginated(
+    @Param('page') page: string,
+    @Param('limit') limit: string,
+    @Query('sort') sort?: string,
+    @Query('filter') filters?: Record<string, any>,
+  ) {
+    return this.userService.findPaginated(+page, +limit, sort, filters);
   }
 
   @Put(':id')

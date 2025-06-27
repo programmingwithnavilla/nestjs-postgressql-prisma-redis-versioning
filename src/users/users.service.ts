@@ -6,7 +6,14 @@ import { IIdentifier } from 'src/common/interfaces/identifier.interface';
 @Injectable()
 export class UsersService {
   constructor(private readonly userRepository: UserRepository) {}
-
+  async findPaginated(
+    page: number,
+    size: number,
+    sort?: string,
+    filters?: Record<string, any>,
+  ) {
+    return this.userRepository.paginate({ page, size, sort, filters });
+  }
   async create(data: CreateUserDTO) {
     return this.userRepository.insert(data);
   }
