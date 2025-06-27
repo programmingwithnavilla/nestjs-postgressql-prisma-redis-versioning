@@ -4,7 +4,9 @@ export interface QueryParams {
   sort?: string;
   filters?: Record<string, unknown>;
 }
-
+export interface FilterQuery {
+  [key: string]: string | number | boolean | Record<string, unknown>;
+}
 export type Primitive = string | number | boolean | null;
 export type FilterOperator =
   | 'eq'
