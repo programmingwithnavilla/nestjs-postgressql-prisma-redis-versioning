@@ -1,169 +1,134 @@
-# NestJS + PostgreSQL + Prisma + Redis Versioning Boilerplate
+# NestJS Prisma UnitOfWork Repository Pattern
 
-This repository is a professional-grade boilerplate for building scalable APIs using NestJS, PostgreSQL, Prisma ORM, Zod validation, and Redis-based versioning. It is designed with best practices suitable for high-standard engineering teams, including those at organizations like Google.
-
----
-
-## 🎯 Project Objective
-
-The primary goal of this project is to demonstrate **Redis-based versioning** for user data in a highly structured backend API architecture. This includes:
-
-- Complete CRUD operations for a `User` entity.
-- Validation using `Zod` for input schemas.
-- Database interaction via `Prisma` ORM.
-- Data versioning using `Redis`, to track every modification in a user lifecycle.
-- Advanced API design for filtering, sorting, and paginating data.
-
----
-
-## 🔧 Tech Stack
-
-| Tool         | Purpose                           |
-|--------------|-----------------------------------|
-| NestJS       | Main framework                    |
-| PostgreSQL   | Relational Database               |
-| Prisma       | Type-safe ORM                     |
-| Zod          | Runtime input validation          |
-| Redis        | Caching and versioning mechanism  |
-| ioredis      | Redis client for Node.js          |
+A clean, scalable, and testable NestJS starter template implementing **Prisma ORM** with the **Repository Pattern**, **Unit of Work**, and **Base Entity/Repository** abstractions. Includes Redis caching for performance optimization.
 
 ---
 
 ## 📁 Project Structure
 
-```bash
 src/
-├── common/
-│   ├── base.entity.ts
-│   ├── base.repository.ts
-├── app.module.ts
-├── users/
-│   ├── users.controller.ts
-│   ├── users.service.ts
-│   ├── users.module.ts
-│   ├── users.repository.ts
-│   └── dto/
-│       ├── create-user.dto.ts
-│       ├── update-user.dto.ts
-│       ├── query-user.dto.ts
+├── app.module.ts          # Root module
+├── main.ts                # Entry point
+├── database/
+│   ├── prisma.module.ts   # Prisma module
+│   └── prisma.service.ts  # Prisma client wrapper
 ├── redis/
-│   └── redis.module.ts
-prisma/
-├── schema.prisma
-.env
-```
+│   ├── redis.module.ts    # Redis module
+│   └── redis.service.ts   # Redis caching service
+├── entities/
+│   └── base.entity.ts     # Base entity with common fields
+├── interfaces/
+│   ├── identifier.interface.ts # Identifier interface
+│   ├── repository.interface.ts # Repository interface
+│   └── unit-of-work.interface.ts # Unit of Work interface
+├── repositories/
+│   ├── base.repository.ts       # Base repository with common methods
+│   └── users.repository.ts      # User repository extending base repo
+├── services/
+│   └── users.service.ts         # Business logic layer
+├── controllers/
+│   └── users.controller.ts      # HTTP request handling
+└── dto/
+    └── create-user.dto.ts       # DTOs with validation schemas
+
 
 ---
 
-## ⚙️ Setup Instructions
+## 🎯 Project Goals
 
-### 1. Clone the repository
-```bash
-git clone https://github.com/your-username/nest-redis-user-crud.git
-cd nest-redis-user-crud
-```
+- Implement **Repository Pattern** for data access separation  
+- Use **Unit of Work** pattern to manage transactions and coordinate multiple repositories  
+- Provide reusable **BaseEntity** and **BaseRepository** to avoid repetition  
+- Support **pagination**, **filtering**, and **sorting** out of the box  
+- Leverage **Prisma** for type-safe ORM operations  
+- Integrate **Redis** caching for faster data retrieval  
+- Ensure clean, testable, and maintainable code  
 
-### 2. Install dependencies
+---
+
+## 🏗 Layers Explained
+
+### 1. Entity Layer  
+Defines domain models. All entities inherit from `BaseEntity` which includes fields like `id`, `createdAt`, `updatedAt`, `archivedAt`.
+
+### 2. Repository Layer  
+Handles direct data access logic. `BaseRepository` offers generic CRUD methods. Specific repositories extend it for custom queries.
+
+### 3. Unit of Work Layer  
+Manages transaction boundaries and coordinates repositories to ensure atomic operations.
+
+### 4. Service Layer  
+Contains business rules and logic, using repositories as data sources.
+
+### 5. Controller Layer  
+Exposes REST API endpoints, validates input, and delegates requests to services.
+
+---
+
+## ⚙️ Key Features
+
+- Full CRUD operations for User entity  
+- Dynamic pagination, filtering, and sorting support  
+- Input validation using **Zod**  
+- Redis caching integration  
+- Extensible and modular architecture  
+
+---
+
+## 🚀 Quick Start
+
 ```bash
 npm install
-```
-
-### 3. Setup PostgreSQL
-Update your `.env` file:
-```env
-DATABASE_URL="postgresql://USER:PASSWORD@localhost:5432/yourdb"
-```
-
-### 4. Setup Prisma
-```bash
-npx prisma generate
-npx prisma db push
-```
-
-### 5. Setup Redis
-Ensure Redis is installed and running locally on `localhost:6379`. You can use Docker:
-```bash
-docker run --name redis -p 6379:6379 -d redis
-```
-
-### 6. Run the server
-```bash
+npx prisma migrate dev
 npm run start:dev
-```
+
 
 ---
 
-## 🔁 Redis Versioning Concept
+## 🎯 Project Goals
 
-Redis is used to track versions of user entities. This pattern is especially useful in distributed systems where multiple services need to be aware of the data's freshness.
-
-### Example Usage:
-- When a user is created: `user:1:version = 1`
-- On each update: version is incremented: `INCR user:1:version`
-- Other services can watch this key to invalidate their caches or re-fetch fresh data
-
-### Benefits:
-- Lightweight and fast
-- Stateless API (versioning is externalized)
-- Enables eventual consistency strategies in microservices
+- Implement **Repository Pattern** for data access separation  
+- Use **Unit of Work** pattern to manage transactions and coordinate multiple repositories  
+- Provide reusable **BaseEntity** and **BaseRepository** to avoid repetition  
+- Support **pagination**, **filtering**, and **sorting** out of the box  
+- Leverage **Prisma** for type-safe ORM operations  
+- Integrate **Redis** caching for faster data retrieval  
+- Ensure clean, testable, and maintainable code  
 
 ---
 
-## 📚 Advanced API Design
+## 🏗 Layers Explained
 
-### Query Parameters for Listing Users
+### 1. Entity Layer  
+Defines domain models. All entities inherit from `BaseEntity` which includes fields like `id`, `createdAt`, `updatedAt`, `archivedAt`.
 
-- **Pagination**: `page`, `size`
-- **Sorting**: `sort=name:asc`, `sort=createdAt:desc`
-- **Filtering**:
-  - Exact: `filter[name]=john`
-  - Multiple conditions: `filter[createdAt][lte]=2024-01-01`, `filter[email]=example@site.com`
+### 2. Repository Layer  
+Handles direct data access logic. `BaseRepository` offers generic CRUD methods. Specific repositories extend it for custom queries.
 
-#### Sample Request:
-```
-GET /users?page=2&size=10&sort=createdAt:desc&filter[name]=john&filter[createdAt][lte]=2024-01-01
-```
+### 3. Unit of Work Layer  
+Manages transaction boundaries and coordinates repositories to ensure atomic operations.
 
----
+### 4. Service Layer  
+Contains business rules and logic, using repositories as data sources.
 
-## 🧱 Base Entity & Repository Pattern
-
-### `BaseEntity`
-Common fields like `id`, `createdAt`, `updatedAt`:
-```ts
-export abstract class BaseEntity {
-  id: number;
-  createdAt: Date;
-  updatedAt: Date;
-}
-```
-
-### `BaseRepository`
-Encapsulates common DB methods (pagination, filtering, sorting).
-
-### `UserRepository`
-Extends `BaseRepository`, handles user-specific queries and integrates Redis versioning.
+### 5. Controller Layer  
+Exposes REST API endpoints, validates input, and delegates requests to services.
 
 ---
 
-## 🧪 Sample API Endpoints
+## ⚙️ Key Features
 
-| Method | Route        | Description                     |
-|--------|--------------|---------------------------------|
-| GET    | `/users`     | List users with filters/sort    |
-| POST   | `/users`     | Create a new user               |
-| GET    | `/users/:id` | Retrieve user by ID             |
-| PUT    | `/users/:id` | Update a user                   |
-| DELETE | `/users/:id` | Delete a user                   |
+- Full CRUD operations for User entity  
+- Dynamic pagination, filtering, and sorting support  
+- Input validation using **Zod**  
+- Redis caching integration  
+- Extensible and modular architecture  
 
 ---
 
-## 🧠 Contributions
+## 🚀 Quick Start
 
-This boilerplate is maintained with long-term maintainability and production-readiness in mind. Feel free to contribute by submitting pull requests.
-
----
-
-## 📜 License
-
-MIT License
+```bash
+npm install
+npx prisma migrate dev
+npm run start:dev
